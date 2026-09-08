@@ -44,10 +44,6 @@ PRODUCTS = [
         "url": "https://www.firstcry.com/hot-wheels/hot-wheels-lamborghini-veneno-die-cast-model-car-black/24342823/product-detail",
     },
     {
-        "name": "Hot Wheels McLaren Elva - Orange",
-        "url": "https://www.firstcry.com/hot-wheels/hot-wheels-mclaren-elva-3-5-die-cast-car-orange/24342824/product-detail",
-    },
-    {
         "name": "Hot Wheels Aston Martin DBS - Green",
         "url": "https://www.firstcry.com/hot-wheels/hot-wheels-aston-martin-dbs-die-cast-free-wheel-toy-car-green/24390956/product-detail",
     },
