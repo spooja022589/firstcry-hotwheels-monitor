@@ -34,7 +34,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install playwright requests
-          python -m playwright install --with-deps chromium
+
+      - name: Install Chromium
+        run: |
+          python -m playwright install chromium
 
       - name: Run FirstCry monitor
         env:
