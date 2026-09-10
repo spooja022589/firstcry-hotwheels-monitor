@@ -76,10 +76,6 @@ PRODUCTS = [
         "url": "https://www.firstcry.com/hot-wheels/hot-wheels-cars-die-cast-models-premium-fast-and-furious-lexus-lfa-car-for-adult-collectors-grey/24390966/product-detail",
     },
     {
-        "name": "Hot Wheels Cars, Die-Cast Models Premium Fast & Furious Lexus LFA",
-        "url": "https://www.firstcry.com/hot-wheels/hot-wheels-cars-die-cast-models-premium-fast-and-furious-lexus-lfa-car-for-adult-collectors-grey/24390966/product-detail",
-    },
-    {
         "name": "Hot Wheels 3/5 Silver Series Vintage Club 69 Copo Corvette",
         "url": "https://www.firstcry.com/hot-wheels/hot-wheels-3-5-silver-series-vintage-club-69-copo-corvette-die-cast-car-red/24390969/product-detail",
     }
