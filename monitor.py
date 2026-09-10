@@ -20,10 +20,6 @@ PRODUCTS = [
         "url": "https://www.firstcry.com/hot-wheels/hot-wheels-cars-die-cast-free-wheel-premium-fast-and-furious-toyota-supra-car-for-adult-collectors-orange/24390965/product-detail",
     },
     {
-        "name": "Hot Wheels Toyota GR Supra - Grey",
-        "url": "https://www.firstcry.com/hot-wheels/hot-wheels-free-wheel-die-cast-20-toyota-gr-supra-157-250-toy-car-grey/23074263/product-detail",
-    },
-    {
         "name": "Hot Wheels Color Shifters Nissan Skyline GT-R R32 - Red",
         "url": "https://www.firstcry.com/hot-wheels/hot-wheels-color-shifters-nissan-skyline-gt-r-r32-car-toy-red/21252872/product-detail",
     },
