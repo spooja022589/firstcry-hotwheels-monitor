@@ -74,7 +74,7 @@ PRODUCTS = [
     {
         "name": "Hot Wheels 3/5 Silver Series Vintage Club 69 Copo Corvette",
         "url": "https://www.firstcry.com/hot-wheels/hot-wheels-3-5-silver-series-vintage-club-69-copo-corvette-die-cast-car-red/24390969/product-detail",
-    }
+    },
 ]
 
 
@@ -142,6 +142,33 @@ def send_telegram(message):
     return False
 
 
+def send_product_notification(product, price):
+    lines = [
+        "🔥 HOT WHEELS AVAILABLE!",
+        f"📍 FirstCry pincode: {PINCODE}",
+        "",
+        f"🚗 {product['name']}",
+    ]
+
+    if price:
+        lines.append(f"💰 {price}")
+
+    lines.extend([
+        "🛒 ADD TO CART AVAILABLE",
+        product["url"],
+    ])
+
+    message = "\n".join(lines)
+
+    print()
+    print("=" * 70)
+    print("🚨 SENDING IMMEDIATE TELEGRAM ALERT")
+    print(product["name"])
+    print("=" * 70)
+
+    send_telegram(message)
+
+
 # ============================================================
 # PRICE
 # ============================================================
@@ -205,7 +232,6 @@ def find_pincode_input(page):
         except Exception:
             continue
 
-    # Fallback: inspect visible inputs.
     try:
         inputs = page.locator("input")
 
@@ -277,7 +303,6 @@ def open_delivery_control(page):
 
 
 def submit_pincode(page, input_element):
-    # Look near the input first.
     for parent_level in range(1, 4):
         try:
             parent = input_element
@@ -314,7 +339,6 @@ def submit_pincode(page, input_element):
         except Exception:
             continue
 
-    # Search globally.
     try:
         buttons = page.locator("button, [role='button']")
 
@@ -347,7 +371,6 @@ def submit_pincode(page, input_element):
     except Exception:
         pass
 
-    # Final fallback.
     try:
         input_element.press("Enter")
         print("Submitted pincode using Enter.")
@@ -359,10 +382,8 @@ def submit_pincode(page, input_element):
 def verify_pincode(page, expected):
     expected = str(expected).strip()
 
-    # Allow FirstCry to update delivery information.
     page.wait_for_timeout(2500)
 
-    # 1. Visible input contains the target pincode.
     try:
         inputs = page.locator("input")
 
@@ -389,7 +410,6 @@ def verify_pincode(page, expected):
 
     text = visible_text(page)
 
-    # 2. Positive delivery confirmation.
     success_patterns = [
         r"delivery by",
         r"delivery on",
@@ -408,7 +428,6 @@ def verify_pincode(page, expected):
             )
             return True
 
-    # 3. Explicit invalid/not-serviceable message.
     invalid_patterns = [
         r"please enter valid pincode",
         r"enter valid pincode",
@@ -426,7 +445,6 @@ def verify_pincode(page, expected):
             )
             return False
 
-    # 4. Browser storage.
     try:
         storage_values = page.evaluate("""
             () => {
@@ -458,8 +476,6 @@ def verify_pincode(page, expected):
     except Exception:
         pass
 
-    # 5. Do not fail merely because FirstCry did not expose a
-    # confirmation message. Product-level cart verification follows.
     print(
         "Pincode confirmation text not detected. "
         "Continuing with product-level delivery/cart check."
@@ -526,9 +542,6 @@ def initialize_pincode(page):
 # STOCK DETECTION
 # ============================================================
 
-# Keep these specific. Do NOT use generic "unavailable":
-# FirstCry can contain unrelated unavailable text on an
-# otherwise purchasable product page.
 OOS_PHRASES = [
     "out of stock",
     "out-of-stock",
@@ -551,14 +564,12 @@ def has_any(text, phrases):
 
 
 def element_is_disabled(element):
-    # Native disabled property.
     try:
         if element.is_disabled():
             return True
     except Exception:
         pass
 
-    # aria-disabled.
     try:
         if (
             element.get_attribute("aria-disabled") or ""
@@ -567,7 +578,6 @@ def element_is_disabled(element):
     except Exception:
         pass
 
-    # Disabled class.
     try:
         classes = (
             element.get_attribute("class") or ""
@@ -582,19 +592,6 @@ def element_is_disabled(element):
 
 
 def add_to_cart_is_enabled(page):
-    """
-    Strong availability check.
-
-    FirstCry may render Add to Cart as:
-      - button text
-      - input value
-      - aria-label/title
-      - an element with cart-related data attributes
-      - a clickable link/container
-
-    We inspect all of these instead of relying only on inner_text().
-    """
-
     selectors = [
         "button",
         '[role="button"]',
@@ -622,7 +619,6 @@ def add_to_cart_is_enabled(page):
                     if not element.is_visible():
                         continue
 
-                    # Collect every useful label FirstCry might expose.
                     values = []
 
                     for attribute in [
@@ -638,8 +634,10 @@ def add_to_cart_is_enabled(page):
                     ]:
                         try:
                             value = element.get_attribute(attribute)
+
                             if value:
                                 values.append(value)
+
                         except Exception:
                             pass
 
@@ -663,6 +661,7 @@ def add_to_cart_is_enabled(page):
                         "Enabled Add to Cart/Add to Bag control found."
                     )
                     print(f"Cart control label: {label[:250]}")
+
                     return True
 
                 except Exception:
@@ -671,13 +670,6 @@ def add_to_cart_is_enabled(page):
         except Exception:
             continue
 
-    # --------------------------------------------------------
-    # Text locator fallback.
-    #
-    # This catches cases where the visible Add to Cart text is
-    # inside a nested span/div and the parent button itself has
-    # no useful inner_text/attributes.
-    # --------------------------------------------------------
     for phrase in ["Add to Cart", "Add to Bag"]:
         try:
             loc = page.get_by_text(
@@ -693,8 +685,6 @@ def add_to_cart_is_enabled(page):
                 if not text_element.is_visible():
                     continue
 
-                # Walk up a few levels looking for the actual clickable
-                # control.
                 candidate = text_element
 
                 for _ in range(5):
@@ -742,6 +732,7 @@ def add_to_cart_is_enabled(page):
         f"No enabled Add to Cart/Add to Bag control found "
         f"after checking {checked} elements."
     )
+
     return False
 
 
@@ -771,41 +762,39 @@ def check_product(context, product):
 
         pin_confirmed = initialize_pincode(page)
 
-        # Let FirstCry refresh delivery/stock/cart state.
         page.wait_for_timeout(3000)
 
         body = body_text(page)
         lower_body = normalize(body)
         price = extract_price(page)
 
-        # Never report availability if pincode was explicitly rejected
-        # or the pincode could not be initialized at all.
         if pin_confirmed is False:
             print("RESULT: UNKNOWN - pincode not verified")
+
             return {
                 "status": "unknown",
                 "price": price,
             }
 
         # --------------------------------------------------------
-        # IMPORTANT FIX:
-        #
-        # Check an enabled Add to Cart FIRST.
-        #
-        # FirstCry can contain generic words such as "unavailable"
-        # elsewhere on the page. Those must never override a real,
-        # enabled Add to Cart control.
+        # CHECK ENABLED ADD TO CART FIRST
         # --------------------------------------------------------
+
         if add_to_cart_is_enabled(page):
             print("RESULT: IN_STOCK - Add to Cart enabled")
+
             return {
                 "status": "available",
                 "price": price,
             }
 
-        # Only after the cart check do we evaluate explicit OOS text.
+        # --------------------------------------------------------
+        # THEN CHECK EXPLICIT OOS TEXT
+        # --------------------------------------------------------
+
         if has_any(lower_body, OOS_PHRASES):
             print("RESULT: OUT_OF_STOCK")
+
             return {
                 "status": "out_of_stock",
                 "price": price,
@@ -816,6 +805,7 @@ def check_product(context, product):
                 "RESULT: UNKNOWN - Add to Cart text exists "
                 "but enabled control was not confirmed"
             )
+
         else:
             print(
                 "RESULT: UNKNOWN - no enabled Add to Cart "
@@ -829,6 +819,7 @@ def check_product(context, product):
 
     except Exception as e:
         print(f"Product check failed: {e}")
+
         return {
             "status": "unknown",
             "price": "",
@@ -852,9 +843,10 @@ def main():
     print(f"TARGET PINCODE: {PINCODE}")
     print(f"PRODUCTS: {len(PRODUCTS)}")
     print("NO PRODUCT STATE JSON IS USED")
+    print("TELEGRAM ALERTS: IMMEDIATE")
     print("=" * 70)
 
-    available_products = []
+    available_count = 0
     out_of_stock_count = 0
     unknown_count = 0
 
@@ -880,7 +872,10 @@ def main():
             ),
         )
 
+        # --------------------------------------------------------
         # Remove duplicate URLs while preserving order.
+        # --------------------------------------------------------
+
         seen_urls = set()
         products_to_check = []
 
@@ -895,55 +890,54 @@ def main():
             seen_urls.add(product["url"])
             products_to_check.append(product)
 
+        # --------------------------------------------------------
+        # CHECK PRODUCTS ONE BY ONE
+        # --------------------------------------------------------
+
         for product in products_to_check:
+
             result = check_product(context, product)
+
             status = result["status"]
 
+            # ----------------------------------------------------
+            # IMPORTANT:
+            # Send Telegram immediately when this individual
+            # product is detected as available.
+            #
+            # We DO NOT wait for the remaining products.
+            # ----------------------------------------------------
+
             if status == "available":
-                available_products.append({
-                    **product,
-                    "price": result["price"],
-                })
+
+                available_count += 1
+
+                print()
+                print("🚨 PRODUCT AVAILABLE!")
+                print(product["name"])
+
+                send_product_notification(
+                    product,
+                    result["price"],
+                )
+
             elif status == "out_of_stock":
+
                 out_of_stock_count += 1
+
             else:
+
                 unknown_count += 1
 
         browser.close()
 
     print()
     print("=" * 70)
-    print(f"AVAILABLE: {len(available_products)}")
+    print("MONITOR RUN COMPLETE")
+    print(f"AVAILABLE: {available_count}")
     print(f"OUT OF STOCK: {out_of_stock_count}")
     print(f"UNKNOWN: {unknown_count}")
     print("=" * 70)
-
-    # --------------------------------------------------------
-    # No state file:
-    # Every run independently checks the products.
-    # Therefore every currently available product is notified.
-    # --------------------------------------------------------
-    if not available_products:
-        print("No products currently available.")
-        return
-
-    lines = [
-        "🔥 HOT WHEELS AVAILABLE!",
-        f"📍 FirstCry pincode: {PINCODE}",
-        "",
-    ]
-
-    for product in available_products:
-        lines.append(f"🚗 {product['name']}")
-
-        if product["price"]:
-            lines.append(f"💰 {product['price']}")
-
-        lines.append("🛒 ADD TO CART AVAILABLE")
-        lines.append(product["url"])
-        lines.append("")
-
-    send_telegram("\n".join(lines))
 
 
 if __name__ == "__main__":
